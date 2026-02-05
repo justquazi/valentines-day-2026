@@ -32,6 +32,24 @@ const locations = [
     lng: -123.3656,
     note: "She visited me first year",
   },
+  {
+    name: "Parry Sound, ON",
+    lat: 45.3473,
+    lng: -80.0355,
+    note: "Second family cottage trip",
+  },
+  {
+    name: "Kawartha Lakes, ON",
+    lat: 44.3579,
+    lng: -78.7408,
+    note: "First family cottage trip",
+  },
+  {
+    name: "Waterloo, ON",
+    lat: 43.4643,
+    lng: -80.5204,
+    note: "Your university!",
+  },
 ];
 
 // ======================
@@ -100,30 +118,30 @@ function latLngToVec3(lat, lng, r) {
 }
 
 function createPin(lat, lng) {
-  const g = new THREE.Group();
+  const group = new THREE.Group();
 
   const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8),
+    new THREE.CylinderGeometry(0.02, 0.02, 0.45, 8), // thinner + shorter
     new THREE.MeshStandardMaterial({ color: 0xff4d6d }),
   );
 
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.09, 16, 16),
+    new THREE.SphereGeometry(0.065, 16, 16), // smaller head
     new THREE.MeshStandardMaterial({ color: 0xff4d6d }),
   );
 
-  stem.position.y = 0.3;
-  head.position.y = 0.65;
-  g.add(stem, head);
+  stem.position.y = 0.225;
+  head.position.y = 0.48;
 
-  const pos = latLngToVec3(lat, lng, globeRadius + 0.02);
-  g.position.copy(pos);
-  g.quaternion.setFromUnitVectors(
-    new THREE.Vector3(0, 1, 0),
-    pos.clone().normalize(),
-  );
+  group.add(stem, head);
 
-  return g;
+  const pos = latLngToVec3(lat, lng, globeRadius + 0.015);
+  group.position.copy(pos);
+
+  const normal = pos.clone().normalize();
+  group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+
+  return group;
 }
 
 // ======================
