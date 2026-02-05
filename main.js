@@ -56,6 +56,7 @@ const locations = [
 // SCENE
 // ======================
 let started = false;
+let hasZoomed = false;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0b1d3a);
 
@@ -148,11 +149,15 @@ function createPin(lat, lng) {
 // CAMERA ANIMATION
 // ======================
 function animateCameraTo(lat, lng, distance = 12, duration = 3) {
+  if (!window.gsap) return;
+
   const target = latLngToVec3(lat, lng, globeRadius);
   const dir = target.clone().normalize();
   const dest = dir.multiplyScalar(distance);
 
   controls.enabled = false;
+  gsap.killTweensOf(camera.position);
+  gsap.killTweensOf(controls.target);
 
   gsap.to(camera.position, {
     x: dest.x,
@@ -160,10 +165,14 @@ function animateCameraTo(lat, lng, distance = 12, duration = 3) {
     z: dest.z,
     duration,
     ease: "power2.inOut",
-    onUpdate: () => camera.lookAt(0, 0, 0),
+    onUpdate: () => {
+      controls.target.set(0, 0, 0);
+      camera.lookAt(0, 0, 0);
+    },
     onComplete: () => {
+      controls.target.set(0, 0, 0);
       controls.enabled = true;
-      started = true; // 🔑 stop idle rotation AFTER zoom
+      started = true;
     },
   });
 }
@@ -223,14 +232,28 @@ const startBtn = document.getElementById("startBtn");
 const overlay = document.getElementById("overlay");
 
 startBtn.addEventListener("click", () => {
+  if (hasZoomed) return;
+  hasZoomed = true;
+
   overlay.style.opacity = 0;
   overlay.style.pointerEvents = "none";
 
   renderer.domElement.style.pointerEvents = "auto";
 
-  // Zoom out to Canada view
   animateCameraTo(56, -106, 12, 3);
 });
+
+const introTitle = document.getElementById("intro-title");
+const introContent = document.getElementById("intro-content");
+
+// Phase timing
+setTimeout(() => {
+  introTitle.classList.remove("active");
+}, 1600);
+
+setTimeout(() => {
+  introContent.classList.add("active");
+}, 2200);
 
 // ======================
 // ANIMATE
@@ -240,10 +263,11 @@ function animate() {
 
   if (!started) {
     globe.rotation.y += 0.0004;
+  } else {
+    handleHover(); // ONLY after intro
   }
 
   controls.update();
-  handleHover();
   renderer.render(scene, camera);
 }
 
