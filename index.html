@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Our World</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- IMPORT MAP: tells browser what "three" means -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="overlay">
+      <h1>Our World</h1>
+      <p>Every place mattered because it was with you.</p>
+      <button id="startBtn">Go</button>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <!-- GSAP global (safe) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <!-- MAIN MODULE -->
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
