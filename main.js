@@ -37,6 +37,7 @@ const locations = [
 // ======================
 // SCENE
 // ======================
+let started = false;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0b1d3a);
 
@@ -126,6 +127,30 @@ function createPin(lat, lng) {
 }
 
 // ======================
+// CAMERA ANIMATION
+// ======================
+function animateCameraTo(lat, lng, distance = 12, duration = 3) {
+  const target = latLngToVec3(lat, lng, globeRadius);
+  const dir = target.clone().normalize();
+  const dest = dir.multiplyScalar(distance);
+
+  controls.enabled = false;
+
+  gsap.to(camera.position, {
+    x: dest.x,
+    y: dest.y,
+    z: dest.z,
+    duration,
+    ease: "power2.inOut",
+    onUpdate: () => camera.lookAt(0, 0, 0),
+    onComplete: () => {
+      controls.enabled = true;
+      started = true; // 🔑 stop idle rotation AFTER zoom
+    },
+  });
+}
+
+// ======================
 // PINS
 // ======================
 const pins = [];
@@ -182,7 +207,11 @@ const overlay = document.getElementById("overlay");
 startBtn.addEventListener("click", () => {
   overlay.style.opacity = 0;
   overlay.style.pointerEvents = "none";
+
   renderer.domElement.style.pointerEvents = "auto";
+
+  // Zoom out to Canada view
+  animateCameraTo(56, -106, 12, 3);
 });
 
 // ======================
@@ -190,9 +219,14 @@ startBtn.addEventListener("click", () => {
 // ======================
 function animate() {
   requestAnimationFrame(animate);
-  globe.rotation.y += 0.0004;
+
+  if (!started) {
+    globe.rotation.y += 0.0004;
+  }
+
   controls.update();
   handleHover();
   renderer.render(scene, camera);
 }
+
 animate();
