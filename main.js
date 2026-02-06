@@ -5,12 +5,12 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
 // LOCATIONS
 // ======================
 const locations = [
-  { name: "Thornhill, ON", lat: 43.8085, lng: -79.4259, note: "Where we met" },
+  { name: "Thornhill, ON", lat: 43.8085, lng: -79.4259, note: "Our home city" },
   {
     name: "Toronto, ON",
     lat: 43.6532,
     lng: -79.3832,
-    note: "Uni fair together",
+    note: "Prom",
   },
   {
     name: "Montreal, QC",
@@ -30,7 +30,8 @@ const locations = [
     name: "Victoria, BC",
     lat: 48.4284,
     lng: -123.3656,
-    note: "She visited me first year",
+    note: "My University!",
+    photos: ["img/victoria-1.jpg", "img/victoria-2.jpg"],
   },
   {
     name: "Parry Sound, ON",
@@ -50,6 +51,12 @@ const locations = [
     lng: -80.5204,
     note: "Your university!",
   },
+  {
+    name: "St. Catharines, ON",
+    lat: 43.1594,
+    lng: -79.2469,
+    note: "Solar Eclipse Trip",
+  },
 ];
 
 // ======================
@@ -59,6 +66,10 @@ let started = false;
 let hasZoomed = false;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0b1d3a);
+let mode = "world"; // "world" | "location"
+let activePin = null;
+const WORLD_CAMERA_POS = new THREE.Vector3(0, 0, 22);
+let previousCameraPosition = new THREE.Vector3();
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -177,6 +188,19 @@ function animateCameraTo(lat, lng, distance = 12, duration = 3) {
   });
 }
 
+function animateCameraToWorld(duration = 2.5) {
+  gsap.to(camera.position, {
+    x: WORLD_CAMERA_POS.x,
+    y: WORLD_CAMERA_POS.y,
+    z: WORLD_CAMERA_POS.z,
+    duration,
+    ease: "power2.inOut",
+    onUpdate: () => {
+      camera.lookAt(0, 0, 0);
+    },
+  });
+}
+
 // ======================
 // PINS
 // ======================
@@ -224,6 +248,121 @@ function handleHover() {
     tooltip.style.opacity = 0;
   }
 }
+
+window.addEventListener("click", () => {
+  if (mode !== "world") return;
+  if (!hovered) return;
+
+  enterLocation(hovered);
+});
+
+// ======================
+// ENTER LOCATION ON PIN CLICK
+// ======================
+
+function enterLocation(pin) {
+  mode = "location";
+  activePin = pin;
+  previousCameraPosition.copy(camera.position);
+
+  // Hide other pins
+  pins.forEach((p) => {
+    if (p !== pin) p.visible = false;
+  });
+
+  // Lock orbit target
+  controls.target.set(0, 0, 0);
+  controls.update();
+
+  const { lat, lng } = pin.userData;
+
+  // Proper distance for globe radius 5
+  animateCameraTo(lat, lng, 9.5, 2.5);
+
+  showStoryCard(pin.userData);
+}
+
+const storyCard = document.querySelector(".story-card");
+const storyTitle = document.getElementById("storyTitle");
+const storyText = document.getElementById("storyNote");
+
+const backBtn = document.getElementById("backBtn");
+
+// ======================
+// STORY CARDS
+// ======================
+const photoRow = document.getElementById("photoRow");
+function showStoryCard(data) {
+  storyTitle.textContent = data.name;
+  storyText.textContent = data.note;
+
+  photoRow.innerHTML = "";
+
+  if (data.photos) {
+    data.photos.forEach((src) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = data.name;
+      img.style.opacity = 0;
+      img.style.transform = "translateY(20px)";
+      photoRow.appendChild(img);
+    });
+  }
+
+  storyOverlay.classList.remove("hidden");
+
+  // Fade overlay in
+  gsap.fromTo(
+    storyOverlay,
+    { opacity: 0 },
+    { opacity: 1, duration: 0.8, ease: "power2.out" },
+  );
+
+  // Animate photos (staggered)
+  gsap.to(photoRow.children, {
+    opacity: 1,
+    y: 0,
+    duration: 0.6,
+    ease: "power2.out",
+    stagger: 0.15,
+    delay: 0.3,
+  });
+}
+
+function hideStoryCard() {
+  // storyCard.classList.remove("active");
+  renderer.domElement.style.filter = "none";
+  storyOverlay.classList.add("hidden");
+}
+
+backBtn.addEventListener("click", () => {
+  gsap.to(storyOverlay, {
+    opacity: 0,
+    duration: 0.6,
+    ease: "power2.in",
+    onComplete: () => {
+      storyOverlay.classList.add("hidden");
+
+      // Restore pins
+      pins.forEach((p) => (p.visible = true));
+      controls.enabled = true;
+      mode = "world";
+      activePin = null;
+
+      // Animate camera back to where it was
+      gsap.to(camera.position, {
+        x: previousCameraPosition.x,
+        y: previousCameraPosition.y,
+        z: previousCameraPosition.z,
+        duration: 2.2,
+        ease: "power2.inOut",
+        onUpdate: () => {
+          camera.lookAt(0, 0, 0);
+        },
+      });
+    },
+  });
+});
 
 // ======================
 // START BUTTON
