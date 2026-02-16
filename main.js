@@ -57,6 +57,24 @@ const locations = [
     lng: -79.2469,
     note: "Solar Eclipse Trip",
   },
+  {
+    name: "Lagoon City, ON",
+    lat: 44.533,
+    lng:  -79.216,
+    note: "Annie's cottage"
+  },
+  {
+    name: "Innisfil, ON",
+    lat: 44.300,
+    lng:-79.650,
+    note: "Elvin's cottage",
+  },
+  {
+    name: "Tiny, ON",
+    lat: 44.683,
+    lng: -79.950,
+    note: "Claire's cottage"
+  }
 ];
 
 // ======================
@@ -133,17 +151,17 @@ function createPin(lat, lng) {
   const group = new THREE.Group();
 
   const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.02, 0.02, 0.45, 8), // thinner + shorter
+    new THREE.CylinderGeometry(0.01, 0.01, 0.3, 6), // thinner + shorter
     new THREE.MeshStandardMaterial({ color: 0xff4d6d }),
   );
 
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.065, 16, 16), // smaller head
+    new THREE.SphereGeometry(0.045, 8, 8), // smaller head
     new THREE.MeshStandardMaterial({ color: 0xff4d6d }),
   );
 
-  stem.position.y = 0.225;
-  head.position.y = 0.48;
+  stem.position.y = 0.150; // pin placement
+  head.position.y = 0.30;
 
   group.add(stem, head);
 
