@@ -179,17 +179,17 @@ function createPin(lat, lng) {
   const group = new THREE.Group();
 
   const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.02, 0.02, 0.45, 8), // thinner + shorter
+    new THREE.CylinderGeometry(0.01, 0.01, 0.3, 6), // thinner + shorter
     new THREE.MeshStandardMaterial({ color: 0xff4d6d }),
   );
 
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.065, 16, 16), // smaller head
+    new THREE.SphereGeometry(0.045, 8, 8), // smaller head
     new THREE.MeshStandardMaterial({ color: 0xff4d6d }),
   );
 
-  stem.position.y = 0.225;
-  head.position.y = 0.48;
+  stem.position.y = 0.150; // pin placement
+  head.position.y = 0.30;
 
   group.add(stem, head);
 
